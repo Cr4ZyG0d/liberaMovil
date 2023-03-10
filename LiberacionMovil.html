@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Liberar Solicitud CGTIC</title>
+    <meta charset="UTF-8">
+    <link rel="icon" type="image/x-icon" href="./favicon.ico" />
+    <link href="./reports.css" rel="stylesheet" type="text/css">
+</head>
+
+<body style="display: flex; flex-direction: column; min-height: 97vh;">
+    <header style="flex: 0 0 auto;">
+        <div class="row"
+            style="background-image: url(./bg_header.png); background-repeat: no-repeat; background-size: cover">
+            <div _ngcontent-sxm-c1="" class="col-4" style="padding-top: 15px; padding-bottom: 10px;">
+                <img _ngcontent-sxm-c1="" alt="" src="./logo_2.png" style=" width:250px; " tabindex="0"
+                    ng-reflect-router-link="inicio">
+            </div>
+        </div>
+    </header>
+    <main style="flex: 1 0 auto;">
+        <div style="text-align: center;">
+            <form id="login-form" style="margin: 0 auto; width: 50%;" method="post">
+                <br /><label for="example-input" style="font-style: normal; font-weight: bold; font-size: 20px">Por
+                    favor ingrese sus datos</label></br>
+                <input type="text" id="username" name="username" style="width: 200px; padding: 7px; margin: 10px;"
+                    placeholder="Usuario"><br />
+                <input type="password" id="password" name="password" style="width: 200px; padding: 7px; margin: 10px;"
+                    placeholder="Contraseña"><br />
+                <input type="submit" value="Iniciar sesión" id="btnSubmit"
+                    style="background-color: #0e53ea; border-color: #0e53ea; color: white; padding: 10px 20px; margin: 10px;"><br />
+            </form>
+            <div id="error-message"></div>
+        </div>
+    </main>
+    <footer _ngcontent-sxm-c2=""
+        style="linear-gradient(90deg, rgba(11,24,39,1) 0%, rgba(39,77,130,1) 35%, rgba(11,24,39,1) 100%); flex: 0 0 auto;">
+        <div _ngcontent-sxm-c2="" class="container-fluid bg_footer">
+            <div _ngcontent-sxm-c2="" class="row">
+                <div _ngcontent-sxm-c2="" class="col-12">
+                    <div _ngcontent-sxm-c2="" style="float: right;  font-size: 10px; width: 100%; text-align: end;">
+                        <a _ngcontent-sxm-c2="" style="text-decoration:none; padding-right: 5px !important;">Copyright
+                            2023© DIRECCIÓN GENERAL DE REGISTRO CIVIL, IDENTIFICACIÓN Y CEDULACIÓN</a>
+                    </div>
+                    <div _ngcontent-sxm-c2="" style="float: right; width: 100%;  font-size: 10px;">
+                        <p _ngcontent-sxm-c2="" style="float: right;padding-right: 5px !important;">Versión 1.0</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        setInterval("location.reload()", 18000000);
+        document.addEventListener("contextmenu", function (e) { e.preventDefault(); }, false);
+        let globalToken;
+        let usuario;
+        async function getToken() {
+            const form = document.getElementById('login-form');
+            form.addEventListener('submit', async (event) => {
+                event.preventDefault(); // evita el comportamiento por defecto del formulario
+                usuario = btoa(document.getElementById('username').value);
+                const clave = btoa(document.getElementById('password').value);
+                const loginData = {
+                    usuario: atob(usuario),
+                    clave: atob(clave)
+                };
+                try {
+                    const response = await fetch('https://sedip.registrocivil.gob.ec:3005/sedip/getToken', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(loginData),
+                        redirect: 'follow'
+                    });
+                    globalToken = await response.json();
+                    const validToken = await fetch('https://sedip.registrocivil.gob.ec:3005/sedip/validarToken', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(globalToken),
+                        redirect: 'follow'
+                    })
+                    const respToken = await validToken.json();
+                    if (respToken.code === 200) {
+                        const responseLogin = await fetch('https://sedip.registrocivil.gob.ec:3005/sedip/LoginUsuario', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': '"' + globalToken.token + '"'
+                            },
+                            body: JSON.stringify(loginData),
+                            redirect: 'follow'
+                        });
+                        const dataLoginAll = await responseLogin.json();
+                        if (dataLoginAll.usuario.codError === atob("MDAw")) {
+                            let getIdRol = dataLoginAll.usuario.rol.filter(function (i) {
+                                return i.idRol === atob("MTM4OA==") || i.idRol === atob("MTU0Ng==");
+                            });
+                            if (getIdRol.length === 2) {
+                                await postLiberarSolicitud();
+                            }
+                        } else {
+                            alert("Usuario/Contraseña Incorrectos")
+                        }
+                    }
+                } catch (error) {
+                    console.error(error)
+                }
+            });
+        }
+
+        /**
+         *
+         * Libera la solicitud de la cola de impresión
+         *
+         */
+        let respEnviaSol;
+        let listadoSolicitudes = [];
+        async function postLiberarSolicitud() {
+            await getToken();
+            // HEADER
+            document.write('<title>Liberar Solicitud CGTIC</title>')
+            document.write('<link href="./reports.css" rel="stylesheet" type="text/css">');
+            document.write('<div class="row" style="background-image: url(./bg_header.png); background-repeat: no-repeat; background-size: cover">');
+            document.write('<div _ngcontent-sxm-c1="" class="col-4" style="padding-top: 15px; padding-bottom: 10px;">');
+            document.write('<img _ngcontent-sxm-c1="" alt="" src="./logo_2.png" style=" width:250px; " tabindex="0" ng-reflect-router-link="inicio">');
+            document.write('</div></div>');
+            // DATOS
+            document.write('<div style="text-align: center;">')
+            document.write('<br/><label for="example-input" style="font-style: normal; font-weight: bold; font-size: 20px">Solicitud a liberar CGTIC</label></br>');
+            document.write('<table style="width: 600px; margin: 0 auto; background-color: #efeff6; border: 0;">');
+            document.write('<tr style="background-color: #efeff6;">');
+            document.write('<td style="background-color: #efeff6; text-align: center;"><textarea id="example-textarea-input" name="example-textarea-input" rows="9" style="width: 200px; padding: 7px; margin: 10px;" required></textarea></td></tr>');
+            document.write('<tr style="background-color: #efeff6;">');
+            document.write('<td style="background-color: #efeff6; text-align: center;"><button type="submit" id="submit-button-varios" name="submit-button" style="background-color: #0e53ea; border-color: #0e53ea; color: white; padding: 10px 20px; margin: 10px; width: 200px;">LIBERAR VARIOS</button></td></tr>');
+            // FOOTER
+            document.write('<br/><footer _ngcontent-sxm-c2="" style="linear-gradient(to right,#0B1827,#274D82,#0B1827); position: absolute !important; bottom: 13 !important; width: 99% !important; margin-top: 20px; !important">');
+            document.write('<div _ngcontent-sxm-c2="" class="container-fluid bg_footer">');
+            document.write('<div _ngcontent-sxm-c2="" class="row">');
+            document.write('<div _ngcontent-sxm-c2="" class="col-12">');
+            document.write('<div _ngcontent-sxm-c2="" style="float: right;  font-size: 10px; width: 100%; text-align: end;">');
+            document.write('<a _ngcontent-sxm-c2="" style="text-decoration:none; padding-right: 5px !important;">Copyright 2023© DIRECCIÓN GENERAL DE REGISTRO CIVIL, IDENTIFICACIÓN Y CEDULACIÓN</a></div>');
+            document.write('<div _ngcontent-sxm-c2="" style="float: right; width: 100%;  font-size: 10px; padding-right: 5px !important;">');
+            document.write('<p _ngcontent-sxm-c2="" style="float: right; padding-right: 5px !important;">Versión 1.0</p>');
+            document.write('</div></div></div></div></footer>');
+            document.addEventListener("contextmenu", function (e) { e.preventDefault(); }, false);
+            const buttonVarios = document.getElementById("submit-button-varios");
+            buttonVarios.addEventListener("click", async (e) => {
+                e.preventDefault();
+                const solicitudVarios = document.getElementById('example-textarea-input').value;
+                let dataSolVarios = {};
+                dataSolVarios.operador = atob(usuario);
+                dataSolVarios.solicitudes = [];
+                const regexSolVarias = /[./,_;:\s\r\n-]/;
+                const solVarias = solicitudVarios.split(regexSolVarias);
+                for (let i = 0; i < solVarias.length; i++) {
+                    if (solVarias[i].length > 7) {
+                        dataSolVarios.solicitudes.push(solVarias[i]);
+                    }
+                }
+                try {
+                    const response = await fetch('https://sedip.registrocivil.gob.ec:3005/configuracion/eliminaSolicitudesCSV', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': '"' + globalToken.token + '"'
+                        },
+                        body: JSON.stringify(dataSolVarios),
+                        redirect: 'follow'
+                    });
+                    respEnviaSol = await response.json();
+                    if (respEnviaSol.data == "Eliminadas" && (respEnviaSol.res1 > 0 || respEnviaSol.res2 > 0)) {
+                        alert(respEnviaSol.res1 + " Liberada(as), " + respEnviaSol.res2 + " Solicitudes no fueron encontradas en los registros de solicitudes de SEDIP.")
+                        document.getElementById('example-textarea-input').value = "";
+                    }
+                } catch (error) {
+                    console.error(error);
+                    alert("No se pudo procesar")
+                }
+            });
+
+        }
+        getToken();
+    </script>
+
+</body>
+
+</html>
