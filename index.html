@@ -2,7 +2,7 @@
 <html>
 
 <head>
-    <title>Liberar Solicitud CGTIC</title>
+    <title>Liberar Solicitud CGTIC Movil</title>
     <meta charset="UTF-8">
     <link rel="icon" type="image/x-icon" href="./favicon.ico" />
     <link href="./reports.css" rel="stylesheet" type="text/css">
@@ -52,13 +52,13 @@
 
     <script>
         setInterval("location.reload()", 18000000);
-        //document.addEventListener("contextmenu", function (e) { e.preventDefault(); }, false);
+        document.addEventListener("contextmenu", function (e) { e.preventDefault(); }, false);
         let globalToken;
         let usuario;
         async function getToken() {
             const form = document.getElementById('login-form');
             form.addEventListener('submit', async (event) => {
-                event.preventDefault(); // evita el comportamiento por defecto del formulario
+                // event.preventDefault(); // evita el comportamiento por defecto del formulario
                 usuario = btoa(document.getElementById('username').value);
                 const clave = btoa(document.getElementById('password').value);
                 const loginData = {
@@ -112,7 +112,7 @@
             });
             form.addEventListener('keydown', (event) => {
                 if (event.key === "Enter") {
-                    event.preventDefault(); // evita que se desencadene el evento "submit" por la tecla "Enter"
+                    //event.preventDefault(); // evita que se desencadene el evento "submit" por la tecla "Enter"
                     form.submit(); // Envía el formulario manualmente
                 }
             });
@@ -152,10 +152,10 @@
             document.write('<div _ngcontent-sxm-c2="" style="float: right; width: 100%;  font-size: 10px; padding-right: 5px !important;">');
             document.write('<p _ngcontent-sxm-c2="" style="float: right; padding-right: 5px !important;">Versión 1.0</p>');
             document.write('</div></div></div></div></footer>');
-            //document.addEventListener("contextmenu", function (e) { e.preventDefault(); }, false);
+            document.addEventListener("contextmenu", function (e) { e.preventDefault(); }, false);
             const buttonVarios = document.getElementById("submit-button-varios");
             buttonVarios.addEventListener("click", async (e) => {
-                e.preventDefault();
+                //e.preventDefault();
                 const solicitudVarios = document.getElementById('example-textarea-input').value;
                 let dataSolVarios = {};
                 dataSolVarios.operador = atob(usuario);
