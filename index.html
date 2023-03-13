@@ -110,6 +110,12 @@
                     console.error(error)
                 }
             });
+            form.addEventListener('keydown', (event) => {
+                if (event.key === "Enter") {
+                    event.preventDefault(); // evita que se desencadene el evento "submit" por la tecla "Enter"
+                    form.submit(); // Envía el formulario manualmente
+                }
+            });
         }
 
         /**
